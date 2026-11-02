@@ -11,15 +11,19 @@
     POST /api/v1/collect            （本服務新增：抓取 + LLM 影響分析）
     GET  /api/v1/analyses?limit=     （本服務新增：影響卡片）
 """
+from pathlib import Path
 from uuid import UUID
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
 from app import collector, db
 from app.config import settings
+
+DEMO_PAGE = (Path(__file__).parent / "demo.html").read_text(encoding="utf-8")
 
 app = FastAPI(
     title=settings.service_name,
@@ -66,6 +70,11 @@ def _record_dict(r: db.PublicRecord, analysis: dict | None = None) -> dict:
         d["body_text"] = r.body_text or ""
         d["analysis"] = analysis
     return d
+
+
+@app.get("/", response_class=HTMLResponse, include_in_schema=False)
+def index():
+    return DEMO_PAGE
 
 
 @app.get("/health")
