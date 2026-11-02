@@ -16,7 +16,7 @@ from uuid import UUID
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -29,6 +29,8 @@ app = FastAPI(
     title=settings.service_name,
     version="0.1.0",
     description="PrismQuant A2 政要監控智能體：採集公開發言，並用大模型抽取實體與資產影響。",
+    docs_url=None,
+    redoc_url=None,
 )
 
 if settings.cors_origins:
@@ -75,6 +77,12 @@ def _record_dict(r: db.PublicRecord, analysis: dict | None = None) -> dict:
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)
 def index():
     return DEMO_PAGE
+
+
+@app.get("/docs", include_in_schema=False)
+@app.get("/redoc", include_in_schema=False)
+def _redirect_docs():
+    return RedirectResponse(url="/")
 
 
 @app.get("/health")
